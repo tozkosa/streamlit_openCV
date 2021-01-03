@@ -9,9 +9,10 @@ def load_image(img):
     im = Image.open(img)
     return im
 
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'frecog/haarcascade_frontalface_default.xml')
-eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'frecog/haarcascade_eye.xml')
-smile_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'frecog/haarcascade_smile.xml')
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
+smile_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_smile.xml')
+
 def detect_faces(our_image):
     new_img = np.array(our_image.convert('RGB'))
     img = cv2.cvtColor(new_img, 1)
@@ -23,23 +24,23 @@ def detect_faces(our_image):
         cv2.rectangle(img, (x,y), (x+w,y+h),(255,0,0),2)
     return img, faces
 
-def detect_eys(our_image):
+def detect_eyes(our_image):
     new_img = np.array(our_image.convert('RGB'))
     img = cv2.cvtColor(new_img, 1)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     eyes = eye_cascade.detectMultiScale(gray,1.3,5)
-    for (ex,ey,ew,eh) in faces:
+    for (ex,ey,ew,eh) in eyes:
         cv2.rectangle(img, (ex,ey), (ex+ew,ey+eh),(0,255,0),2)
-    return img, faces
+    return img, eyes
 
 def detect_smiles(our_image):
     new_img = np.array(our_image.convert('RGB'))
     img = cv2.cvtColor(new_img, 1)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    eyes = smile_cascade.detectMultiScale(gray,1.1,4)
-    for (ex,ey,ew,eh) in faces:
+    smiles = smile_cascade.detectMultiScale(gray,1.1,4)
+    for (ex,ey,ew,eh) in smiles:
         cv2.rectangle(img, (ex,ey), (ex+ew,ey+eh),(0,255,0),2)
-    return img, faces
+    return img, smiles
 
 def cartonize_image(our_image):
     new_img = np.array(our_image.convert('RGB'))
@@ -80,7 +81,7 @@ def main():
             our_image = Image.open(image_file)
             st.text("Original Image")
             st.write(type(our_image))
-            st.image(our_image)
+            st.image(our_image, width=400)
 
         enhance_type = st.sidebar.radio("Enhance Type", ["Original", "Gray-Scale", "Contrast", "Brightness", "Blurring"])
         if enhance_type == 'Gray-Scale':
@@ -88,27 +89,27 @@ def main():
             img = cv2.cvtColor(new_img,1)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             #t.write(new_img)
-            st.image(gray)
+            st.image(gray, width=400)
         if enhance_type == 'Contrast':
             c_rate = st.sidebar.slider("Contrast", 0.5, 3.5)
             enhancer = ImageEnhance.Contrast(our_image)
             img_output = enhancer.enhance(c_rate)
-            st.image(img_output)
+            st.image(img_output, width=400)
         if enhance_type == 'Brightness':
             c_rate = st.sidebar.slider("Brightness", 0.5, 3.5)
             enhancer = ImageEnhance.Brightness(our_image)
             img_output = enhancer.enhance(c_rate)
-            st.image(img_output)
+            st.image(img_output, width=400)
 
         if enhance_type == 'Blurring':
             new_img = np.array(our_image.convert('RGB'))
             blur_rate = st.sidebar.slider("Brightness", 0.5, 3.5)
             img = cv2.cvtColor(new_img,1)
             blur_img = cv2.GaussianBlur(img, (11,11), blur_rate)
-            st.image(blur_img)
+            st.image(blur_img, width=400)
         
         else:
-            st.image(our_image,width=300)
+            st.image(our_image,width=400)
 
         # Face Detection
         task = ["Faces", "Smiles", "Eyes", "Cannize", "Cartonize"]
@@ -117,26 +118,26 @@ def main():
 
             if feature_choice == 'Faces':
                 result_img, result_faces = detect_faces(our_image)
-                st.image(result_img)
+                st.image(result_img,width=600)
 
                 st.success("Found {} faces".format(len(result_faces)))
 
             
             elif feature_choice == 'Smiles':
-                result_img = detect_smiles(our_image)
-                st.image(result_img)
+                result_img, result_faces = detect_smiles(our_image)
+                st.image(result_img, width=400)
             
             elif feature_choice == 'Eyes':
-                result_img = detect_eyes(our_image)
-                st.image(result_img)
+                result_img, result_eyes = detect_eyes(our_image)
+                st.image(result_img, width=400)
 
             elif feature_choice == 'Cartonize':
                 result_img = cartonize_image(our_image)
-                st.image(result_img)
+                st.image(result_img, width=400)
 
             elif feature_choice == 'Cannize':
                 result_canny = cannize_image(our_image)
-                st.image(result_canny)
+                st.image(result_canny, width=400)
 
 
 
